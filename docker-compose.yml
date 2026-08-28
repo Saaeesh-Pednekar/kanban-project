@@ -23,6 +23,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: django:v1
     container_name: kanban_web
     restart: unless-stopped
     command: >
