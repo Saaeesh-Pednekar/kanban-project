@@ -12,7 +12,7 @@ function reindex(cards) {
   return cards.map((card, index) => ({ ...card, position: index }));
 }
 
-export default function KanbanBoard({ boardId }) {
+export default function KanbanBoard({ boardId, onBack }) {
   const [board, setBoard] = useState(null);
   const [lists, setLists] = useState([]); // [{ id, name, position, cards: [...] }]
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function KanbanBoard({ boardId }) {
           .map((list) => ({
             ...list,
             cards: [...list.cards].sort((a, b) => a.position - b.position),
-          }))
+          })),
       );
     } catch (err) {
       setErrorMessage("Failed to load board.");
@@ -59,6 +59,19 @@ export default function KanbanBoard({ boardId }) {
     }
   };
 
+  const deleteList = async (listId) => {
+    if (!window.confirm("Delete this list and all its cards?")) return;
+    const previousLists = lists;
+    // Optimistically remove it, roll back on failure.
+    setLists((prev) => prev.filter((l) => l.id !== listId));
+    try {
+      await api.delete(`/lists/${listId}/`);
+    } catch {
+      setLists(previousLists);
+      setErrorMessage("Could not delete list.");
+    }
+  };
+
   const addCard = async (listId, title) => {
     if (!title.trim()) return;
     const targetList = lists.find((l) => l.id === listId);
@@ -73,8 +86,8 @@ export default function KanbanBoard({ boardId }) {
       });
       setLists((prev) =>
         prev.map((l) =>
-          l.id === listId ? { ...l, cards: [...l.cards, data] } : l
-        )
+          l.id === listId ? { ...l, cards: [...l.cards, data] } : l,
+        ),
       );
     } catch {
       setErrorMessage("Could not create card.");
@@ -162,6 +175,11 @@ export default function KanbanBoard({ boardId }) {
   return (
     <div className="kanban-page">
       <header className="kanban-header">
+        {onBack && (
+          <button className="kanban-back-btn" onClick={onBack}>
+            ← Back to boards
+          </button>
+        )}
         <h1>{board.name}</h1>
         {errorMessage && <div className="kanban-error">{errorMessage}</div>}
       </header>
@@ -178,7 +196,17 @@ export default function KanbanBoard({ boardId }) {
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                 >
-                  <div className="kanban-list-title">{list.name}</div>
+                  <div className="kanban-list-title-row">
+                    <div className="kanban-list-title">{list.name}</div>
+                    <button
+                      className="kanban-list-delete"
+                      onClick={() => deleteList(list.id)}
+                      title="Delete list"
+                      type="button"
+                    >
+                      ✕
+                    </button>
+                  </div>
 
                   {list.cards.map((card, index) => (
                     <Draggable
@@ -189,7 +217,9 @@ export default function KanbanBoard({ boardId }) {
                       {(dragProvided, dragSnapshot) => (
                         <div
                           className={`kanban-card ${
-                            dragSnapshot.isDragging ? "kanban-card--dragging" : ""
+                            dragSnapshot.isDragging
+                              ? "kanban-card--dragging"
+                              : ""
                           }`}
                           ref={dragProvided.innerRef}
                           {...dragProvided.draggableProps}

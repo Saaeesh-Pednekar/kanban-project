@@ -18,7 +18,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ------------------------------------------------------------------
@@ -47,8 +47,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isAuthEndpoint =
-      originalRequest?.url?.includes("/auth/token/");
+    const isAuthEndpoint = originalRequest?.url?.includes("/auth/token/");
 
     if (
       error.response?.status === 401 &&
@@ -103,7 +102,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

@@ -45,15 +45,13 @@ export function AuthProvider({ children }) {
         persistSession({ username }, data.access, data.refresh);
         return true;
       } catch (err) {
-        setError(
-          err.response?.data?.detail || "Invalid username or password."
-        );
+        setError(err.response?.data?.detail || "Invalid username or password.");
         return false;
       } finally {
         setLoading(false);
       }
     },
-    [persistSession]
+    [persistSession],
   );
 
   const register = useCallback(
@@ -80,7 +78,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     },
-    [persistSession]
+    [persistSession],
   );
 
   const logout = useCallback(() => {
@@ -103,7 +101,7 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(
     () => ({ user, isAuthenticated, loading, error, login, register, logout }),
-    [user, isAuthenticated, loading, error, login, register, logout]
+    [user, isAuthenticated, loading, error, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

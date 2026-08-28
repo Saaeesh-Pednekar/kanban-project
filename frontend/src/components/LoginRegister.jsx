@@ -31,7 +31,9 @@ export default function LoginRegister() {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <h1 className="auth-title">{isLogin ? "Welcome back" : "Create an account"}</h1>
+        <h1 className="auth-title">
+          {isLogin ? "Welcome back" : "Create an account"}
+        </h1>
         <p className="auth-subtitle">
           {isLogin
             ? "Log in to access your boards."

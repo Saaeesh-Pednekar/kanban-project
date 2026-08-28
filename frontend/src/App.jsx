@@ -14,11 +14,7 @@ function Dashboard() {
     api.get("/boards/").then(({ data }) => {
       const results = data.results || data;
       setBoards(results);
-      if (results.length && !activeBoardId) {
-        setActiveBoardId(results[0].id);
-      }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const createBoard = async (e) => {
@@ -30,12 +26,30 @@ function Dashboard() {
     setNewBoardName("");
   };
 
+  const deleteBoard = async (boardId) => {
+    if (!window.confirm("Delete this board and everything in it?")) return;
+    await api.delete(`/boards/${boardId}/`);
+    setBoards((prev) => prev.filter((b) => b.id !== boardId));
+  };
+
   if (activeBoardId) {
-    return <KanbanBoard boardId={activeBoardId} />;
+    return (
+      <KanbanBoard
+        boardId={activeBoardId}
+        onBack={() => setActiveBoardId(null)}
+      />
+    );
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", color: "#fff", padding: 24 }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0f172a",
+        color: "#fff",
+        padding: 24,
+      }}
+    >
       <h1>Welcome, {user?.username}</h1>
       <button onClick={logout}>Log out</button>
       <form onSubmit={createBoard} style={{ marginTop: 16 }}>
@@ -48,8 +62,14 @@ function Dashboard() {
       </form>
       <ul>
         {boards.map((b) => (
-          <li key={b.id}>
+          <li
+            key={b.id}
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
             <button onClick={() => setActiveBoardId(b.id)}>{b.name}</button>
+            <button onClick={() => deleteBoard(b.id)} title="Delete board">
+              🗑
+            </button>
           </li>
         ))}
       </ul>
